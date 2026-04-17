@@ -1,5 +1,5 @@
 import express from "express";
-import { createDisclosureReport } from "../controllers/disclosureController.js";
+import { createDisclosureReport, submitDisclosure } from "../controllers/disclosureController.js";
 
 const router = express.Router();
 
@@ -8,5 +8,6 @@ router.get("/:id", async (req, res) => {
   res.send("get disclosure - implement later");
 });
 
+router.post("/submit", submitDisclosure);
 
 export default router;

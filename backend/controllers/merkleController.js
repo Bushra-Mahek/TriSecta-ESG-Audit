@@ -1,123 +1,43 @@
-import crypto from "crypto";
-import { v4 as uuidv4 } from "uuid";
-import { db } from "../config/db.js";
+import { dataPointModel } from "../models/dataPointModel.js";
 import { merkleModel } from "../models/merkleModel.js";
-
-export const generateMerkleRoot = async (req, res) => {
-  try {
-    const { disclosureId } = req.body;
-
-    // get all hashes
-    const result = await db.query(
-      "SELECT hash FROM data_points WHERE disclosure_id = $1",
-      [disclosureId]
-    );
-
-    const hashes = result.rows.map(row => row.hash);
-
-    if (hashes.length === 0) {
-      return res.status(400).json({ error: "No data points found" });
-    }
-
-    // merkle logic
-    let currentLevel = hashes;
-
-    while (currentLevel.length > 1) {
-      let nextLevel = [];
-
-      for (let i = 0; i < currentLevel.length; i += 2) {
-        const left = currentLevel[i];
-        const right = currentLevel[i + 1] || left;
-
-        const combined = crypto
-          .createHash("sha256")
-          .update(left + right)
-          .digest("hex");
-
-        nextLevel.push(combined);
-      }
-
-      currentLevel = nextLevel;
-    }
-
-    const rootHash = currentLevel[0];
-
-    const id = uuidv4();
-
-    const saved = await merkleModel.storeMerkleRoot(
-      id,
-      disclosureId,
-      rootHash
-    );
-
-    res.json({
-      rootHash,
-      saved
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-};
+import { generateMerkleRoot } from "../utils/merkle.js";
 
 export const verifyDisclosure = async (req, res) => {
   try {
     const { disclosureId } = req.body;
 
-    // get stored root
-    const stored = await db.query(
-      "SELECT root_hash FROM merkle_roots WHERE disclosure_id = $1 ORDER BY created_at DESC LIMIT 1",
-      [disclosureId]
-    );
+    if (!disclosureId) {
+      return res.status(400).json({ error: "disclosureId is required" });
+    }
 
-    if (stored.rows.length === 0) {
+    // 1. get stored root (via model)
+    const stored = await merkleModel.getLatestRoot(disclosureId);
+
+    if (!stored) {
       return res.status(404).json({ error: "No root found" });
     }
 
-    const storedRoot = stored.rows[0].root_hash;
+    // 2. get hashes (via model)
+    const hashes = await dataPointModel.getHashesByDisclosure(disclosureId);
 
-    // recompute hashes
-    const result = await db.query(
-      "SELECT hash FROM data_points WHERE disclosure_id = $1",
-      [disclosureId]
-    );
-
-    let hashes = result.rows.map(r => r.hash);
-
-    if (hashes.length === 0) {
+    if (!hashes.length) {
       return res.status(400).json({ error: "No data points" });
     }
 
-    // rebuild merkle
-    while (hashes.length > 1) {
-      let next = [];
+    // 3. recompute root (via utils)
+    const computedRoot = generateMerkleRoot(hashes);
 
-      for (let i = 0; i < hashes.length; i += 2) {
-        const left = hashes[i];
-        const right = hashes[i + 1] || left;
-
-        const combined = crypto
-          .createHash("sha256")
-          .update(left + right)
-          .digest("hex");
-
-        next.push(combined);
-      }
-
-      hashes = next;
-    }
-
-    const computedRoot = hashes[0];
+    // 4. compare
+    const isValid = computedRoot === stored.root_hash;
 
     res.json({
-      valid: computedRoot === storedRoot,
-      storedRoot,
+      valid: isValid,
+      storedRoot: stored.root_hash,
       computedRoot
     });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Verification failed" });
   }
 };
