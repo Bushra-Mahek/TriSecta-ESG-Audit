@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Verify ESG Report</title>
+<link rel="stylesheet" href="/styles/main.css">
+</head>
+
+<body>
+
+<div class="navbar">
+  <div><b>VeritasESG</b></div>
+  <div>
+    <a href="/">Dashboard</a>
+    <a href="/reports">Reports</a>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h1>Integrity Verification</h1>
+
+<p><b>Report ID:</b> <%= report.id %></p>
+
+<p><b>Scope1:</b> <%= report.scope1_emissions %></p>
+<p><b>Scope2:</b> <%= report.scope2_emissions %></p>
+
+<hr>
+
+<h3>Verification Result</h3>
+
+<% if(verified) { %>
+
+<p style="color:green;font-weight:bold">
+✔ Data Integrity Verified
+</p>
+
+<% } else { %>
+
+<p style="color:red;font-weight:bold">
+⚠ Data Tampering Detected
+</p>
+
+<% } %>
+
+</div>
+
+</div>
+
+</body>
+</html>

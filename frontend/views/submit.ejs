@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Submit ESG Report</title>
+<link rel="stylesheet" href="/styles/main.css">
+</head>
+
+<body>
+
+<div class="navbar">
+  <div><b>VeritasESG</b></div>
+  <div>
+    <a href="/">Dashboard</a>
+    <a href="/reports">Reports</a>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h1>Submit ESG Report</h1>
+
+<form action="/esg" method="POST">
+
+<label>Scope 1 Emissions</label>
+<input name="scope1_emissions" required>
+
+<label>Scope 2 Emissions</label>
+<input name="scope2_emissions" required>
+
+<label>Water Usage</label>
+<input name="water_usage" required>
+
+<label>Waste Generated</label>
+<input name="waste_generated" required>
+
+<button type="submit">Submit Report</button>
+
+</form>
+
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ESG Reports</title>
+<link rel="stylesheet" href="/styles/main.css">
+</head>
+
+<body>
+
+<div class="navbar">
+  <div><b>VeritasESG</b></div>
+  <div>
+    <a href="/">Dashboard</a>
+    <a href="/submit">Submit</a>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h1>Submitted ESG Reports</h1>
+
+<table>
+
+<tr>
+<th>ID</th>
+<th>Scope1</th>
+<th>Scope2</th>
+<th>Water</th>
+<th>Waste</th>
+<th>Verify</th>
+</tr>
+
+<% reports.forEach(r => { %>
+
+<tr>
+<td><%= r.id %></td>
+<td><%= r.scope1_emissions %></td>
+<td><%= r.scope2_emissions %></td>
+<td><%= r.water_usage %></td>
+<td><%= r.waste_generated %></td>
+<td>
+<a href="/verify/<%= r.id %>">
+<button>Verify</button>
+</a>
+</td>
+</tr>
+
+<% }) %>
+
+</table>
+
+</div>
+
+</div>
+
+</body>
+</html>
