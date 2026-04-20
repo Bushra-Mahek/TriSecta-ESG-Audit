@@ -1,7 +1,6 @@
 import { db } from "../config/db.js";
 
 export const dataPointModel = {
-
   // CREATE DATA POINT
   async createDataPoint(
     id,
@@ -10,7 +9,7 @@ export const dataPointModel = {
     value,
     periodStart,
     periodEnd,
-    hash
+    hash,
   ) {
     const query = `
       INSERT INTO data_points 
@@ -26,13 +25,12 @@ export const dataPointModel = {
       value,
       periodStart,
       periodEnd,
-      hash
+      hash,
     ];
 
     const result = await db.query(query, values);
     return result.rows[0];
   },
-
 
   // GET ALL DATA POINTS FOR A DISCLOSURE (needed for merkle)
   async getDataPointsByDisclosure(disclosureId) {
@@ -46,16 +44,16 @@ export const dataPointModel = {
     return result.rows;
   },
 
-
   // GET ONLY HASHES (used in verification)
   async getHashesByDisclosure(disclosureId) {
     const query = `
-      SELECT hash FROM data_points
-      WHERE disclosure_id = $1;
-    `;
+    SELECT hash
+    FROM data_points
+    WHERE disclosure_id = $1
+    ORDER BY created_at ASC;
+  `;
 
     const result = await db.query(query, [disclosureId]);
-    return result.rows.map(row => row.hash);
-  }
-
+    return result.rows.map((row) => row.hash);
+  },
 };
