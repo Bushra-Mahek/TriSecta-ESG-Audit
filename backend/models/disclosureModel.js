@@ -1,14 +1,13 @@
 import { db } from "../config/db.js";
 
 export const disclosureModel = {
-
   // CREATE DISCLOSURE
   async createDisclosure(id, reportId, companyId) {
     const result = await db.query(
       `INSERT INTO disclosures (id, company_id, report_id, status)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [id, companyId, reportId, "DRAFT"]
+      [id, companyId, reportId, "DRAFT"],
     );
 
     return result.rows[0];
@@ -16,10 +15,9 @@ export const disclosureModel = {
 
   // GET DISCLOSURE BY ID
   async getDisclosureById(id) {
-    const result = await db.query(
-      "SELECT * FROM disclosures WHERE id = $1",
-      [id]
-    );
+    const result = await db.query("SELECT * FROM disclosures WHERE id = $1", [
+      id,
+    ]);
 
     return result.rows[0];
   },
@@ -28,13 +26,13 @@ export const disclosureModel = {
   async getDisclosureStatus(disclosureId) {
     const result = await db.query(
       "SELECT status FROM disclosures WHERE id = $1",
-      [disclosureId]
+      [disclosureId],
     );
 
     return result.rows[0];
   },
 
-  // 🔥 ADD THIS (missing earlier)
+  // SUBMIT DISCLOSURE
   async submitDisclosure(disclosureId) {
     const result = await db.query(
       `UPDATE disclosures
@@ -42,10 +40,22 @@ export const disclosureModel = {
            submitted_at = NOW()
        WHERE id = $1
        RETURNING *`,
-      [disclosureId]
+      [disclosureId],
     );
 
     return result.rows[0];
-  }
+  },
 
+  // MARK VERIFIED
+  async markVerified(disclosureId) {
+    const result = await db.query(
+      `UPDATE disclosures
+       SET status = 'VERIFIED'
+       WHERE id = $1
+       RETURNING *`,
+      [disclosureId],
+    );
+
+    return result.rows[0];
+  },
 };
